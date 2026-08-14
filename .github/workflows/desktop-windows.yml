@@ -23,7 +23,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         working-directory: apps/desktop-community
-        run: npm install
+        run: npm install --workspaces=false
       - name: Run smoke test
         working-directory: apps/desktop-community
         run: npm run test:smoke
