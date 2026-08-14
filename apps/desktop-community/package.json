@@ -1,6 +1,6 @@
 {
   "name": "dsh-desktop-community",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Unofficial community desktop wrapper for DeepSeek Harness",
   "main": "desktop/main.cjs",
   "author": "DSH Desktop Community contributors",
@@ -10,14 +10,9 @@
     "start": "electron .",
     "dist:win": "electron-builder --win nsis --x64",
     "test:smoke": "node desktop/smoke-test.cjs",
-    "test:runtime": "node node_modules/@deepseek-ai/dsh/lib/bin.js web --help"
+    "test:runtime": "node desktop/runtime-server-test.cjs --entry runtime/node_modules/@deepseek-ai/dsh/lib/bin.js"
   },
-  "dependencies": {
-    "@deepseek-ai/dsh": "0.1.0-rc.6",
-    "@deepseek-ai/cordis-plugin-group": "^1.0.1",
-    "@deepseek-ai/dsh-invariants": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-system-prompt": "0.1.0-rc.6"
-  },
+  "dependencies": {},
   "devDependencies": {
     "electron": "39.2.7",
     "electron-builder": "26.0.12"
@@ -30,8 +25,18 @@
     "files": [
       "desktop/**/*",
       "assets/**/*",
-      "package.json",
-      "node_modules/**/*"
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime/node_modules",
+        "to": "runtime/node_modules",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "runtime/package.json",
+        "to": "runtime/package.json"
+      }
     ],
     "directories": {
       "buildResources": "assets",
