@@ -1,6 +1,6 @@
 {
   "name": "dsh-desktop-community",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Unofficial community desktop wrapper for DeepSeek Harness",
   "main": "desktop/main.cjs",
   "author": "DSH Desktop Community contributors",
@@ -9,10 +9,14 @@
   "scripts": {
     "start": "electron .",
     "dist:win": "electron-builder --win nsis --x64",
-    "test:smoke": "node desktop/smoke-test.cjs"
+    "test:smoke": "node desktop/smoke-test.cjs",
+    "test:runtime": "node node_modules/@deepseek-ai/dsh/lib/bin.js web --help"
   },
   "dependencies": {
-    "@deepseek-ai/dsh": "0.1.0-rc.6"
+    "@deepseek-ai/dsh": "0.1.0-rc.6",
+    "@deepseek-ai/cordis-plugin-group": "^1.0.1",
+    "@deepseek-ai/dsh-invariants": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-system-prompt": "0.1.0-rc.6"
   },
   "devDependencies": {
     "electron": "39.2.7",

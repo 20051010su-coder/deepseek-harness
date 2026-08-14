@@ -33,15 +33,26 @@ jobs:
       - name: Run smoke test
         working-directory: ${{ runner.temp }}/dsh-desktop-community
         run: npm run test:smoke
+      - name: Verify installed DSH runtime
+        working-directory: ${{ runner.temp }}/dsh-desktop-community
+        run: npm run test:runtime
       - name: Build Windows installer
         working-directory: ${{ runner.temp }}/dsh-desktop-community
         run: npm run dist:win
       - name: Verify packaged DSH runtime
         shell: pwsh
         run: |
-          $runtime = Join-Path '${{ runner.temp }}' 'dsh-desktop-community/dist/win-unpacked/resources/app/node_modules/@deepseek-ai/dsh/package.json'
+          $unpacked = Join-Path '${{ runner.temp }}' 'dsh-desktop-community/dist/win-unpacked'
+          $runtime = Join-Path $unpacked 'resources/app/node_modules/@deepseek-ai/dsh/package.json'
           if (-not (Test-Path -LiteralPath $runtime)) {
             throw "Packaged DSH runtime is missing: $runtime"
+          }
+          $electron = Join-Path $unpacked 'DSH Desktop Community.exe'
+          $entry = Join-Path $unpacked 'resources/app/node_modules/@deepseek-ai/dsh/lib/bin.js'
+          $env:ELECTRON_RUN_AS_NODE = '1'
+          $process = Start-Process -FilePath $electron -ArgumentList @($entry, 'web', '--help') -Wait -PassThru -NoNewWindow
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged DSH runtime failed with exit code $($process.ExitCode)"
           }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
