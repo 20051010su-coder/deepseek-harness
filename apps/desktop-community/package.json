@@ -1,6 +1,6 @@
 {
   "name": "dsh-desktop-community",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial community desktop wrapper for DeepSeek Harness",
   "main": "desktop/main.cjs",
   "author": "DSH Desktop Community contributors",
@@ -22,11 +22,7 @@
     "appId": "community.dsh.desktop",
     "productName": "DSH Desktop Community",
     "artifactName": "DSH-Desktop-Community-${version}-${arch}.${ext}",
-    "asar": true,
-    "asarUnpack": [
-      "node_modules/@deepseek-ai/**",
-      "node_modules/node-addon-require-builtin/**"
-    ],
+    "asar": false,
     "files": [
       "desktop/**/*",
       "assets/**/*",
