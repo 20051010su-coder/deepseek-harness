@@ -50,9 +50,9 @@ jobs:
           $electron = Join-Path $unpacked 'DSH Desktop Community.exe'
           $entry = Join-Path $unpacked 'resources/app/node_modules/@deepseek-ai/dsh/lib/bin.js'
           $env:ELECTRON_RUN_AS_NODE = '1'
-          & $electron $entry web --help
-          if ($LASTEXITCODE -ne 0) {
-            throw "Packaged DSH runtime failed with exit code $LASTEXITCODE"
+          $process = Start-Process -FilePath $electron -ArgumentList @($entry, 'web', '--help') -Wait -PassThru -NoNewWindow
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged DSH runtime failed with exit code $($process.ExitCode)"
           }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
