@@ -1,0 +1,60 @@
+{
+  "name": "dsh-desktop-community",
+  "version": "0.1.0",
+  "description": "Unofficial community desktop wrapper for DeepSeek Harness",
+  "main": "desktop/main.cjs",
+  "author": "DSH Desktop Community contributors",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis --x64",
+    "test:smoke": "node desktop/smoke-test.cjs"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.1.0-rc.6"
+  },
+  "devDependencies": {
+    "electron": "39.2.7",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "community.dsh.desktop",
+    "productName": "DSH Desktop Community",
+    "artifactName": "DSH-Desktop-Community-${version}-${arch}.${ext}",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/@deepseek-ai/**",
+      "node_modules/node-addon-require-builtin/**"
+    ],
+    "files": [
+      "desktop/**/*",
+      "assets/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DSH Desktop Community",
+      "uninstallDisplayName": "DSH Desktop Community",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    }
+  }
+}
