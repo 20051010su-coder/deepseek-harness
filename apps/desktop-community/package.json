@@ -44,8 +44,7 @@
           "target": "nsis",
           "arch": ["x64"]
         }
-      ],
-      "publisherName": "DSH Desktop Community"
+      ]
     },
     "nsis": {
       "oneClick": false,
