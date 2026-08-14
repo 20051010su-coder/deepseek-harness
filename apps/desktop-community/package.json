@@ -1,6 +1,6 @@
 {
   "name": "dsh-desktop-community",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unofficial community desktop wrapper for DeepSeek Harness",
   "main": "desktop/main.cjs",
   "author": "DSH Desktop Community contributors",

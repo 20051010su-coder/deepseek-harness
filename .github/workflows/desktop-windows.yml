@@ -21,22 +21,35 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Prepare isolated desktop build
+        shell: pwsh
+        run: |
+          $buildDir = Join-Path '${{ runner.temp }}' 'dsh-desktop-community'
+          New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
+          Copy-Item -Path 'apps/desktop-community/*' -Destination $buildDir -Recurse -Force
       - name: Install dependencies
-        working-directory: apps/desktop-community
-        run: npm install --workspaces=false
+        working-directory: ${{ runner.temp }}/dsh-desktop-community
+        run: npm install
       - name: Run smoke test
-        working-directory: apps/desktop-community
+        working-directory: ${{ runner.temp }}/dsh-desktop-community
         run: npm run test:smoke
       - name: Build Windows installer
-        working-directory: apps/desktop-community
+        working-directory: ${{ runner.temp }}/dsh-desktop-community
         run: npm run dist:win
+      - name: Verify packaged DSH runtime
+        shell: pwsh
+        run: |
+          $runtime = Join-Path '${{ runner.temp }}' 'dsh-desktop-community/dist/win-unpacked/resources/app/node_modules/@deepseek-ai/dsh/package.json'
+          if (-not (Test-Path -LiteralPath $runtime)) {
+            throw "Packaged DSH runtime is missing: $runtime"
+          }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: dsh-desktop-community-windows-x64
           path: |
-            apps/desktop-community/dist/*.exe
-            apps/desktop-community/dist/*.blockmap
+            ${{ runner.temp }}/dsh-desktop-community/dist/*.exe
+            ${{ runner.temp }}/dsh-desktop-community/dist/*.blockmap
       - name: Publish tagged release
         if: startsWith(github.ref, 'refs/tags/desktop-v')
         uses: softprops/action-gh-release@v2
@@ -44,5 +57,5 @@ jobs:
           generate_release_notes: true
           prerelease: true
           files: |
-            apps/desktop-community/dist/*.exe
-            apps/desktop-community/dist/*.blockmap
+            ${{ runner.temp }}/dsh-desktop-community/dist/*.exe
+            ${{ runner.temp }}/dsh-desktop-community/dist/*.blockmap
