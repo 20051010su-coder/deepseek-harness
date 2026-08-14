@@ -49,7 +49,8 @@ async function main() {
   const port = await freePort();
   let output = '';
   let exited;
-  const child = spawn(executable, [entry, 'web', '--host', '127.0.0.1', '--port', String(port)], {
+  const runtimeArgs = [...(electron ? ['--expose-internals'] : []), entry, 'web', '--host', '127.0.0.1', '--port', String(port)];
+  const child = spawn(executable, runtimeArgs, {
     cwd: process.cwd(),
     windowsHide: true,
     env: { ...process.env, ...(electron ? { ELECTRON_RUN_AS_NODE: '1' } : {}), NO_COLOR: '1' },

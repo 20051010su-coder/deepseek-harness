@@ -128,7 +128,7 @@ async function startServer() {
     DSH_DESKTOP_COMMUNITY: '1',
     NO_COLOR: '1'
   };
-  serverProcess = spawn(process.execPath, [dshEntry(), 'web', '--port', String(serverPort)], {
+  serverProcess = spawn(process.execPath, ['--expose-internals', dshEntry(), 'web', '--port', String(serverPort)], {
     cwd: selectedWorkspace(),
     env,
     windowsHide: true,
