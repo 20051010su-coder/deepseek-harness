@@ -11,5 +11,6 @@ assert.ok(fs.existsSync(path.join(root, 'assets', 'icon.png')), 'icon.png is mis
 assert.ok(fs.existsSync(path.join(root, 'assets', 'icon.ico')), 'icon.ico is missing');
 assert.ok(fs.existsSync(path.join(root, 'desktop', 'loading.html')), 'loading.html is missing');
 assert.equal(manifest.build.asar, false, 'dsh must remain unpacked for the background process');
-assert.ok(require.resolve('@deepseek-ai/dsh/package.json'), 'installed dsh runtime is missing');
+assert.ok(fs.existsSync(path.join(root, 'runtime', 'node_modules', '@deepseek-ai', 'dsh', 'package.json')), 'installed dsh runtime is missing');
+assert.ok(fs.existsSync(path.join(root, 'desktop', 'runtime-server-test.cjs')), 'runtime server test is missing');
 console.log('Desktop packaging smoke test passed.');

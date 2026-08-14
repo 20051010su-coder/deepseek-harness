@@ -12,6 +12,7 @@ let serverProcess;
 let serverPort;
 let quitting = false;
 let recentServerOutput = '';
+let serverReady = false;
 
 function settingsPath() {
   return path.join(app.getPath('userData'), 'desktop-settings.json');
@@ -65,8 +66,10 @@ async function findPort() {
 }
 
 function dshEntry() {
-  const packageFile = require.resolve('@deepseek-ai/dsh/package.json');
-  return path.join(path.dirname(packageFile), 'lib', 'bin.js');
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'runtime', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js');
+  }
+  return path.join(__dirname, '..', 'runtime', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js');
 }
 
 function waitForServer(port, child, timeoutMs = 60000) {
@@ -116,6 +119,7 @@ function stopServer() {
 
 async function startServer() {
   stopServer();
+  serverReady = false;
   recentServerOutput = '';
   serverPort = await findPort();
   const env = {
@@ -138,12 +142,13 @@ async function startServer() {
   serverProcess.stdout.on('data', (chunk) => recordOutput('stdout', chunk));
   serverProcess.stderr.on('data', (chunk) => recordOutput('stderr', chunk));
   serverProcess.once('exit', (code) => {
-    if (!quitting && code !== 0 && mainWindow && !mainWindow.isDestroyed()) {
+    if (serverReady && !quitting && code !== 0 && mainWindow && !mainWindow.isDestroyed()) {
       dialog.showErrorBox(APP_NAME, `DeepSeek Harness background service stopped (code ${code}).`);
     }
   });
   log(`Starting dsh on 127.0.0.1:${serverPort} with workspace ${selectedWorkspace()}`);
   await waitForServer(serverPort, serverProcess);
+  serverReady = true;
   log(`dsh is ready on 127.0.0.1:${serverPort}`);
 }
 

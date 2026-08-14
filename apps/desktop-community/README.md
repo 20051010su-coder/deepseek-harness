@@ -12,7 +12,7 @@ An **unofficial community desktop wrapper** for [DeepSeek Harness](https://githu
 - Native folder picker for changing the Harness working directory
 - First-run working-directory selection
 - Persistent startup log and actionable error dialog
-- Build-time execution checks for both installed and packaged DSH dependencies
+- Full HTTP startup tests for both installed and packaged DSH runtimes
 - Local-only service bound to `127.0.0.1`
 - Original DeepSeek Harness Web UI
 
