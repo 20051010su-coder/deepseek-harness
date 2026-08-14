@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DSH Desktop Community</title>
+    <style>
+      body { margin: 0; height: 100vh; display: grid; place-items: center; background: #07122e; color: #eaf7ff; font: 14px system-ui, sans-serif; }
+      .card { text-align: center; }
+      .logo { width: 112px; height: 112px; object-fit: contain; }
+      .spinner { width: 28px; height: 28px; margin: 22px auto; border: 3px solid #203a6a; border-top-color: #15c8ff; border-radius: 50%; animation: spin 1s linear infinite; }
+      p { color: #b8cae6; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img class="logo" src="../assets/icon.png" alt="DSH Desktop Community">
+      <h2>DSH Desktop Community</h2>
+      <div class="spinner"></div>
+      <p>正在启动 DeepSeek Harness…</p>
+    </div>
+  </body>
+</html>

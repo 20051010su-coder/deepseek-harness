@@ -11,9 +11,23 @@ let mainWindow;
 let serverProcess;
 let serverPort;
 let quitting = false;
+let recentServerOutput = '';
 
 function settingsPath() {
   return path.join(app.getPath('userData'), 'desktop-settings.json');
+}
+
+function logPath() {
+  return path.join(app.getPath('userData'), 'desktop.log');
+}
+
+function log(message) {
+  const line = `[${new Date().toISOString()}] ${message}\n`;
+  try {
+    fs.mkdirSync(path.dirname(logPath()), { recursive: true });
+    fs.appendFileSync(logPath(), line);
+  } catch {}
+  console.log(message);
 }
 
 function readSettings() {
@@ -55,17 +69,27 @@ function dshEntry() {
   return path.join(path.dirname(packageFile), 'lib', 'bin.js');
 }
 
-function waitForServer(port, timeoutMs = 60000) {
+function waitForServer(port, child, timeoutMs = 60000) {
   const started = Date.now();
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      callback(value);
+    };
+    child.once('exit', (code) => {
+      finish(reject, new Error(`DeepSeek Harness 后台服务启动失败（退出代码 ${code}）。\n\n${recentServerOutput.slice(-1200)}`));
+    });
     const probe = () => {
+      if (settled) return;
       const request = http.get({ host: '127.0.0.1', port, path: '/', timeout: 1000 }, (response) => {
         response.resume();
-        resolve();
+        finish(resolve);
       });
       request.on('error', () => {
         if (Date.now() - started >= timeoutMs) {
-          reject(new Error('DeepSeek Harness did not become ready in time.'));
+          finish(reject, new Error(`DeepSeek Harness 在 60 秒内未能启动。\n\n${recentServerOutput.slice(-1200)}`));
         } else {
           setTimeout(probe, 350);
         }
@@ -92,6 +116,7 @@ function stopServer() {
 
 async function startServer() {
   stopServer();
+  recentServerOutput = '';
   serverPort = await findPort();
   const env = {
     ...process.env,
@@ -105,23 +130,25 @@ async function startServer() {
     windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe']
   });
-  serverProcess.stdout.on('data', (chunk) => console.log(`[dsh] ${chunk}`));
-  serverProcess.stderr.on('data', (chunk) => console.error(`[dsh] ${chunk}`));
+  const recordOutput = (stream, chunk) => {
+    const text = chunk.toString();
+    recentServerOutput = `${recentServerOutput}${text}`.slice(-8000);
+    log(`[dsh:${stream}] ${text.trimEnd()}`);
+  };
+  serverProcess.stdout.on('data', (chunk) => recordOutput('stdout', chunk));
+  serverProcess.stderr.on('data', (chunk) => recordOutput('stderr', chunk));
   serverProcess.once('exit', (code) => {
     if (!quitting && code !== 0 && mainWindow && !mainWindow.isDestroyed()) {
       dialog.showErrorBox(APP_NAME, `DeepSeek Harness background service stopped (code ${code}).`);
     }
   });
-  await waitForServer(serverPort);
+  log(`Starting dsh on 127.0.0.1:${serverPort} with workspace ${selectedWorkspace()}`);
+  await waitForServer(serverPort, serverProcess);
+  log(`dsh is ready on 127.0.0.1:${serverPort}`);
 }
 
 function loadingPage() {
-  const iconPath = path.join(__dirname, '..', 'assets', 'icon.png').replaceAll('\\', '/');
-  const workspace = selectedWorkspace().replaceAll('&', '&amp;').replaceAll('<', '&lt;');
-  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html>
-    <html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src file:; style-src 'unsafe-inline'">
-    <style>body{margin:0;height:100vh;display:grid;place-items:center;background:#07122e;color:#eaf7ff;font:14px system-ui}.card{text-align:center}.logo{width:112px;height:112px}.spinner{width:28px;height:28px;margin:22px auto;border:3px solid #203a6a;border-top-color:#15c8ff;border-radius:50%;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}small{color:#8ea9cf}</style></head>
-    <body><div class="card"><img class="logo" src="file:///${iconPath}"><h2>${APP_NAME}</h2><div class="spinner"></div><p>正在启动 DeepSeek Harness…</p><small>${workspace}</small></div></body></html>`)} `;
+  return path.join(__dirname, 'loading.html');
 }
 
 async function chooseWorkspace() {
@@ -136,13 +163,39 @@ async function chooseWorkspace() {
 }
 
 async function reloadHarness() {
-  await mainWindow.loadURL(loadingPage());
+  await mainWindow.loadFile(loadingPage());
   try {
     await startServer();
     await mainWindow.loadURL(`http://127.0.0.1:${serverPort}`);
   } catch (error) {
-    dialog.showErrorBox(APP_NAME, error.message);
+    log(`Startup failed: ${error.stack || error.message}`);
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: 'error',
+      title: `${APP_NAME} 启动失败`,
+      message: 'DeepSeek Harness 后台服务未能启动',
+      detail: `${error.message}\n\n日志文件：${logPath()}`,
+      buttons: ['重试', '打开日志位置', '退出'],
+      defaultId: 0,
+      cancelId: 2
+    });
+    if (result.response === 0) return reloadHarness();
+    if (result.response === 1) shell.showItemInFolder(logPath());
+    if (result.response === 2) app.quit();
   }
+}
+
+async function ensureFirstWorkspace() {
+  const settings = readSettings();
+  if (settings.workspace && fs.existsSync(settings.workspace)) return true;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: '首次使用：选择 DSH 工作目录',
+    message: 'DSH 只会把这个文件夹作为默认工作位置，你以后可以从“文件”菜单修改。',
+    defaultPath: app.getPath('documents'),
+    properties: ['openDirectory', 'createDirectory']
+  });
+  if (result.canceled || !result.filePaths[0]) return false;
+  writeSettings({ ...settings, workspace: result.filePaths[0] });
+  return true;
 }
 
 function installMenu() {
@@ -178,6 +231,7 @@ function installMenu() {
       submenu: [
         { label: 'DeepSeek Harness 项目主页', click: () => shell.openExternal('https://github.com/deepseek-ai/deepseek-harness') },
         { label: '社区版项目主页', click: () => shell.openExternal('https://github.com/20051010su-coder/deepseek-harness') },
+        { label: '打开日志位置', click: () => shell.showItemInFolder(logPath()) },
         { type: 'separator' },
         { label: `关于 ${APP_NAME}`, click: () => dialog.showMessageBox(mainWindow, { type: 'info', title: `关于 ${APP_NAME}`, message: APP_NAME, detail: `非官方社区桌面封装\n版本 ${app.getVersion()}\n\nDeepSeek Harness 及其商标归原权利人所有。` }) }
       ]
@@ -208,6 +262,11 @@ async function createWindow() {
   });
   mainWindow.once('ready-to-show', () => mainWindow.show());
   installMenu();
+  await mainWindow.loadFile(loadingPage());
+  if (!await ensureFirstWorkspace()) {
+    app.quit();
+    return;
+  }
   await reloadHarness();
 }
 
@@ -229,4 +288,3 @@ app.on('before-quit', () => {
 });
 
 app.on('window-all-closed', () => app.quit());
-

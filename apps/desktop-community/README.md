@@ -10,6 +10,8 @@ An **unofficial community desktop wrapper** for [DeepSeek Harness](https://githu
 - Bundled Electron/Node runtime; end users do not need to install Node.js
 - Windows x64 installer with desktop and Start Menu shortcuts
 - Native folder picker for changing the Harness working directory
+- First-run working-directory selection
+- Persistent startup log and actionable error dialog
 - Local-only service bound to `127.0.0.1`
 - Original DeepSeek Harness Web UI
 
@@ -37,4 +39,3 @@ The first community release is unsigned. Windows SmartScreen may show an “Unkn
 ## License
 
 Desktop-wrapper additions are released under the MIT License. DeepSeek Harness remains governed by its upstream MIT license and third-party notices.
-
