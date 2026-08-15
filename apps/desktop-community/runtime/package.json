@@ -1,6 +1,6 @@
 {
   "name": "dsh-desktop-community-runtime",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "dependencies": {
     "@deepseek-ai/dsh": "0.1.0-rc.6",
