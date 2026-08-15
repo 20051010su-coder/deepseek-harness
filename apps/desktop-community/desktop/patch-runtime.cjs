@@ -5,6 +5,7 @@ const workerPath = path.join(__dirname, '..', 'runtime', 'node_modules', '@deeps
 const safeWorker = `const { execFile } = require('node:child_process');
 if (typeof process.send !== 'function') throw new Error('win32-dialog-worker must run with an IPC channel');
 const script = String.raw\`
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 Add-Type -AssemblyName System.Windows.Forms
 $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
 $dialog.Description = 'Select Workspace Directory'
