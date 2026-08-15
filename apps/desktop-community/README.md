@@ -13,6 +13,7 @@ An **unofficial community desktop wrapper** for [DeepSeek Harness](https://githu
 - First-run working-directory selection
 - Persistent startup log and actionable error dialog
 - Full HTTP startup tests for both installed and packaged DSH runtimes
+- Five-minute first-run grace period for antivirus and plugin initialization
 - Local-only service bound to `127.0.0.1`
 - Original DeepSeek Harness Web UI
 
