@@ -72,7 +72,7 @@ function dshEntry() {
   return path.join(__dirname, '..', 'runtime', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js');
 }
 
-function waitForServer(port, child, timeoutMs = 60000) {
+function waitForServer(port, child, timeoutMs = 300000) {
   const started = Date.now();
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -92,7 +92,7 @@ function waitForServer(port, child, timeoutMs = 60000) {
       });
       request.on('error', () => {
         if (Date.now() - started >= timeoutMs) {
-          finish(reject, new Error(`DeepSeek Harness 在 60 秒内未能启动。\n\n${recentServerOutput.slice(-1200)}`));
+          finish(reject, new Error(`DeepSeek Harness 在 5 分钟内未能启动。\n\n${recentServerOutput.slice(-1200)}`));
         } else {
           setTimeout(probe, 350);
         }
