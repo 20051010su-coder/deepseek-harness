@@ -33,6 +33,9 @@ jobs:
       - name: Install complete DSH production runtime
         working-directory: ${{ runner.temp }}/dsh-desktop-community/runtime
         run: npm install --omit=dev
+      - name: Patch Windows directory picker
+        working-directory: ${{ runner.temp }}/dsh-desktop-community
+        run: node desktop/patch-runtime.cjs
       - name: Run smoke test
         working-directory: ${{ runner.temp }}/dsh-desktop-community
         run: npm run test:smoke
