@@ -20,7 +20,7 @@ $dialog.Dispose()
 `;
 
 execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-STA', '-Command', script], {
-  windowsHide: true,
+  windowsHide: false,
   env: { ...process.env, DSH_PICKER_RESULT_FILE: resultFile }
 }, (error, _stdout, stderr) => {
   if (error) {
